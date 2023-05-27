@@ -31,7 +31,10 @@ func GetArticle(id string) (Article, error) {
 
 	stmt := `SELECT * FROM articles WHERE id = $1`
 
-	db.DB.Get(&found, stmt, id)
+	err := db.DB.Get(&found, stmt, id)
+	if err != nil {
+		return Article{}, err
+	}
 
 	return found, nil
 }
@@ -64,9 +67,7 @@ func CreateArticle(article Article) (Article, error) {
 		}
 	}
 
-	err = tx.Commit()
-
-	if err != nil {
+	if err := tx.Commit(); err != nil {
 		return Article{}, err
 	}
 

@@ -17,9 +17,16 @@ func StartServer() {
 	articlesGroup.GET("", handlers.GetArticles)
 	articlesGroup.GET("/category/:categoryId", handlers.GetArticlesByCategory)
 	articlesGroup.GET("/:id", handlers.GetArticle)
-	articlesGroup.POST("/", handlers.CreateArticle)
+	articlesGroup.POST("", handlers.CreateArticle)
 	articlesGroup.PATCH("/:id", handlers.UpdateArticle)
 	articlesGroup.DELETE("/:id", handlers.DeleteArticle)
+
+	categoriesGroup := apiGroup.Group("/categories")
+	categoriesGroup.GET("", handlers.GetCategories)
+	categoriesGroup.GET("/:id", handlers.GetCategory)
+	categoriesGroup.POST("", handlers.CreateCategory)
+	categoriesGroup.PATCH("/:id", handlers.UpdateCategory)
+	categoriesGroup.DELETE("/:id", handlers.DeleteCategory)
 
 	app.Logger.Fatal(app.Start(":5000"))
 }

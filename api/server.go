@@ -28,5 +28,12 @@ func StartServer() {
 	categoriesGroup.PATCH("/:id", handlers.UpdateCategory)
 	categoriesGroup.DELETE("/:id", handlers.DeleteCategory)
 
+	tagsGroup := apiGroup.Group("/tags")
+	tagsGroup.GET("", handlers.GetTags)
+	tagsGroup.GET("/:id", handlers.GetTag)
+	tagsGroup.POST("", handlers.CreateTag)
+	tagsGroup.PATCH("/:id", handlers.UpdateTag)
+	tagsGroup.DELETE("/:id", handlers.DeleteTag)
+
 	app.Logger.Fatal(app.Start(":5000"))
 }

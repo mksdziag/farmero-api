@@ -3,10 +3,12 @@ package api
 import (
 	"github.com/labstack/echo/v4"
 	"github.com/mksdziag/farmer-api/api/handlers"
+	"github.com/mksdziag/farmer-api/validator"
 )
 
 func StartServer() {
 	app := echo.New()
+	app.Validator = validator.NewAppValidator()
 
 	apiGroup := app.Group("/api")
 	apiGroup.GET("/status", handlers.GetStatus)

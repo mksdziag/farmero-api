@@ -7,7 +7,13 @@ import (
 	_ "github.com/lib/pq"
 )
 
-func CreateDatabaseConnection() *sqlx.DB {
+var DB *sqlx.DB
+
+func init() {
+	DB = createDatabaseConnection()
+}
+
+func createDatabaseConnection() *sqlx.DB {
 	db, err := sqlx.Connect("postgres", "user=postgres dbname=postgres password=postgres sslmode=disable host=api-db-1")
 
 	if err != nil {

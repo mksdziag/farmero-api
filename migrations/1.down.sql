@@ -1,0 +1,5 @@
+DROP TABLE IF EXISTS articles_categories;
+DROP TABLE IF EXISTS articles_tags;
+DROP TABLE IF EXISTS tags;
+DROP TABLE IF EXISTS categories;
+DROP TABLE IF EXISTS articles;

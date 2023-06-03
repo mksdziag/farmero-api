@@ -8,12 +8,26 @@ import (
 	"github.com/labstack/echo/v4"
 	api "github.com/mksdziag/farmer-api/api/errors"
 	"github.com/mksdziag/farmer-api/features/articles"
+	"github.com/mksdziag/farmer-api/features/categories"
+	"github.com/mksdziag/farmer-api/features/tags"
 )
 
 func GetArticles(c echo.Context) error {
 	articles, err := articles.GetArticles()
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, api.CreateApiError(err.Error(), http.StatusInternalServerError))
+	}
+
+	for i, article := range articles {
+		articles[i].Categories, err = categories.GetCategoriesByArticle(article.ID.String())
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, api.CreateApiError(err.Error(), http.StatusInternalServerError))
+		}
+
+		articles[i].Tags, err = tags.GetTagsByArticle(article.ID.String())
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, api.CreateApiError(err.Error(), http.StatusInternalServerError))
+		}
 	}
 
 	return c.JSON(http.StatusOK, articles)

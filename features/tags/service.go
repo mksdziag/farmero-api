@@ -18,12 +18,38 @@ func GetTags() ([]Tag, error) {
 	return tags, nil
 }
 
+func GetTagsByArticle(id string) ([]Tag, error) {
+	query := `
+	SELECT t.id, t.name, t.key FROM articles_tags at
+	JOIN tags t ON t.id = at.tag_id
+	WHERE article_id = $1
+	`
+	rows, err := db.DB.Query(query, id)
+	if err != nil {
+		return nil, err
+	}
+
+	tagsList := make([]Tag, 0)
+	if rows.Next() {
+		var tag = Tag{}
+
+		err := rows.Scan(&tag.ID, &tag.Name, &tag.Key)
+		if err != nil {
+			return nil, err
+		}
+
+		tagsList = append(tagsList, tag)
+	}
+
+	return tagsList, nil
+}
+
 func GetTag(id string) (Tag, error) {
 	var found = Tag{}
 
-	stmt := `SELECT * FROM tags WHERE id = $1`
+	query := `SELECT * FROM tags WHERE id = $1`
 
-	err := db.DB.Get(&found, stmt, id)
+	err := db.DB.Get(&found, query, id)
 	if err != nil {
 		return Tag{}, err
 	}
@@ -41,8 +67,8 @@ func CreateTag(tag Tag) (Tag, error) {
 
 	defer tx.Rollback()
 
-	stmt := `INSERT INTO tags (id, name, key) VALUES (:id, :name, :key) RETURNING *`
-	rows, er := tx.NamedQuery(stmt, tag)
+	query := `INSERT INTO tags (id, name, key) VALUES (:id, :name, :key) RETURNING *`
+	rows, er := tx.NamedQuery(query, tag)
 	if err != nil {
 		return Tag{}, er
 	}
@@ -69,8 +95,8 @@ func CreateTag(tag Tag) (Tag, error) {
 func UpdateTag(id string, tag Tag) (Tag, error) {
 	var updatedTag Tag
 
-	stmt := "UPDATE tags SET name = $2, key = $3 WHERE id = $1 RETURNING *"
-	err := db.DB.QueryRow(stmt, id, tag.Name, tag.Key).Scan(&updatedTag.ID, &updatedTag.Name, &updatedTag.Key)
+	query := "UPDATE tags SET name = $2, key = $3 WHERE id = $1 RETURNING *"
+	err := db.DB.QueryRow(query, id, tag.Name, tag.Key).Scan(&updatedTag.ID, &updatedTag.Name, &updatedTag.Key)
 
 	if err != nil {
 		return Tag{}, err
@@ -87,8 +113,8 @@ func DeleteTag(id string) error {
 
 	defer tx.Rollback()
 
-	stmt := `DELETE FROM tags WHERE id = $1`
-	res, err := tx.Exec(stmt, id)
+	query := `DELETE FROM tags WHERE id = $1`
+	res, err := tx.Exec(query, id)
 
 	if err != nil {
 		return err

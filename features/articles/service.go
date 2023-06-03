@@ -5,6 +5,8 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/mksdziag/farmer-api/db"
+	"github.com/mksdziag/farmer-api/features/categories"
+	"github.com/mksdziag/farmer-api/features/tags"
 )
 
 func GetArticlesByCategory(category string) ([]Article, error) {
@@ -29,9 +31,19 @@ func GetArticles() ([]Article, error) {
 func GetArticle(id string) (Article, error) {
 	var found = Article{}
 
-	stmt := `SELECT * FROM articles WHERE id = $1`
+	query := `SELECT * FROM articles WHERE id = $1`
 
-	err := db.DB.Get(&found, stmt, id)
+	err := db.DB.Get(&found, query, id)
+	if err != nil {
+		return Article{}, err
+	}
+
+	found.Categories, err = categories.GetCategoriesByArticle(id)
+	if err != nil {
+		return Article{}, err
+	}
+
+	found.Tags, err = tags.GetTagsByArticle(id)
 	if err != nil {
 		return Article{}, err
 	}
@@ -49,8 +61,8 @@ func CreateArticle(article Article) (Article, error) {
 
 	defer tx.Rollback()
 
-	stmt := `INSERT INTO articles (id, title, description, content, cover) VALUES (:id, :title, :description, :content, :cover) RETURNING *`
-	rows, er := tx.NamedQuery(stmt, article)
+	query := `INSERT INTO articles (id, title, description, content, cover) VALUES (:id, :title, :description, :content, :cover) RETURNING *`
+	rows, er := tx.NamedQuery(query, article)
 	if err != nil {
 		return Article{}, er
 	}
@@ -77,8 +89,8 @@ func CreateArticle(article Article) (Article, error) {
 func UpdateArticle(id string, article Article) (Article, error) {
 	var updatedArticle Article
 
-	stmt := "UPDATE articles SET title = $2, description = $3, content = $4, cover = $5 WHERE id = $1 RETURNING *"
-	err := db.DB.QueryRow(stmt, id, article.Title, article.Description, article.Content, article.Cover).Scan(&updatedArticle.ID, &updatedArticle.Title, &updatedArticle.Description, &updatedArticle.Content, &updatedArticle.Cover)
+	query := "UPDATE articles SET title = $2, description = $3, content = $4, cover = $5 WHERE id = $1 RETURNING *"
+	err := db.DB.QueryRow(query, id, article.Title, article.Description, article.Content, article.Cover).Scan(&updatedArticle.ID, &updatedArticle.Title, &updatedArticle.Description, &updatedArticle.Content, &updatedArticle.Cover)
 
 	if err != nil {
 		return Article{}, err

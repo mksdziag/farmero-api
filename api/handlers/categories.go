@@ -30,6 +30,17 @@ func GetCategory(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, category)
 }
+func GetCategoryByKey(c echo.Context) error {
+	key := c.Param("key")
+
+	category, err := categories.GetCategoryByKey(key)
+
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, api.CreateApiError(err.Error(), http.StatusNotFound))
+	}
+
+	return c.JSON(http.StatusOK, category)
+}
 
 func CreateCategory(c echo.Context) error {
 	categoryPayload := categories.Category{}

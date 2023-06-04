@@ -2,6 +2,7 @@ package articles
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/mksdziag/farmer-api/db"
@@ -9,10 +10,51 @@ import (
 	"github.com/mksdziag/farmer-api/features/tags"
 )
 
-func GetArticlesByCategory(category string) ([]Article, error) {
+func GetArticlesByCategoryId(id string) ([]Article, error) {
 	var articles = make([]Article, 0)
 
-	db.DB.Select(&articles, "SELECT * FROM articles WHERE category = $1", category)
+	err := db.DB.Select(&articles, "SELECT * FROM articles WHERE id IN (SELECT article_id FROM articles_categories WHERE category_id = $1)", id)
+	if err != nil {
+		return nil, err
+	}
+
+	for idx := range articles {
+		err = attachCategoriesToArticle(&articles[idx])
+		if err != nil {
+			return nil, err
+		}
+
+		err = attachTagsToArticle(&articles[idx])
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return articles, nil
+}
+
+func GetArticlesByCategoryKey(key string) ([]Article, error) {
+	category, err := categories.GetCategoryByKey(key)
+	if err != nil {
+		return nil, err
+	}
+
+	articles, err := GetArticlesByCategoryId(category.ID.String())
+	if err != nil {
+		return nil, err
+	}
+
+	for idx := range articles {
+		err = attachCategoriesToArticle(&articles[idx])
+		if err != nil {
+			return nil, err
+		}
+
+		err = attachTagsToArticle(&articles[idx])
+		if err != nil {
+			return nil, err
+		}
+	}
 
 	return articles, nil
 }
@@ -38,17 +80,23 @@ func GetArticle(id string) (Article, error) {
 		return Article{}, err
 	}
 
-	found.Categories, err = categories.GetCategoriesByArticle(id)
-	if err != nil {
-		return Article{}, err
-	}
-
-	found.Tags, err = tags.GetTagsByArticle(id)
-	if err != nil {
-		return Article{}, err
-	}
-
 	return found, nil
+}
+
+func attachCategoriesToArticle(article *Article) error {
+	categories, err := categories.GetCategoriesByArticle(article.ID.String())
+	article.Categories = categories
+	fmt.Println(categories)
+	fmt.Println(article.Categories)
+	return err
+
+}
+func attachTagsToArticle(article *Article) error {
+	tags, err := tags.GetTagsByArticle(article.ID.String())
+	article.Tags = tags
+
+	return err
+
 }
 
 func CreateArticle(article Article) (Article, error) {

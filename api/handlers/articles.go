@@ -87,10 +87,20 @@ func UpdateArticle(c echo.Context) error {
 	return c.JSON(http.StatusOK, updatedArticle)
 }
 
-func GetArticlesByCategory(c echo.Context) error {
+func GetArticlesByCategoryId(c echo.Context) error {
 	category := c.Param("categoryId")
 
-	articles, err := articles.GetArticlesByCategory(category)
+	articles, err := articles.GetArticlesByCategoryId(category)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, api.CreateApiError(err.Error(), http.StatusInternalServerError))
+	}
+
+	return c.JSON(http.StatusOK, articles)
+}
+func GetArticlesByCategoryKey(c echo.Context) error {
+	categoryKey := c.Param("categoryKey")
+
+	articles, err := articles.GetArticlesByCategoryKey(categoryKey)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, api.CreateApiError(err.Error(), http.StatusInternalServerError))
 	}

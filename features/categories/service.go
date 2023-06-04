@@ -30,6 +30,18 @@ func GetCategory(id string) (Category, error) {
 
 	return found, nil
 }
+func GetCategoryByKey(key string) (Category, error) {
+	var found = Category{}
+
+	query := `SELECT * FROM categories WHERE key = $1`
+
+	err := db.DB.Get(&found, query, key)
+	if err != nil {
+		return Category{}, err
+	}
+
+	return found, nil
+}
 
 func GetCategoriesByArticle(articleID string) ([]Category, error) {
 	query := `

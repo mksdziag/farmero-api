@@ -15,7 +15,8 @@ func StartServer() {
 
 	articlesGroup := apiGroup.Group("/articles")
 	articlesGroup.GET("", handlers.GetArticles)
-	articlesGroup.GET("/category/:categoryId", handlers.GetArticlesByCategory)
+	articlesGroup.GET("/category/:categoryId", handlers.GetArticlesByCategoryId)
+	articlesGroup.GET("/category/key/:categoryKey", handlers.GetArticlesByCategoryKey)
 	articlesGroup.GET("/:id", handlers.GetArticle)
 	articlesGroup.POST("", handlers.CreateArticle)
 	articlesGroup.PATCH("/:id", handlers.UpdateArticle)
@@ -24,6 +25,7 @@ func StartServer() {
 	categoriesGroup := apiGroup.Group("/categories")
 	categoriesGroup.GET("", handlers.GetCategories)
 	categoriesGroup.GET("/:id", handlers.GetCategory)
+	categoriesGroup.GET("/key/:key", handlers.GetCategoryByKey)
 	categoriesGroup.POST("", handlers.CreateCategory)
 	categoriesGroup.PATCH("/:id", handlers.UpdateCategory)
 	categoriesGroup.DELETE("/:id", handlers.DeleteCategory)

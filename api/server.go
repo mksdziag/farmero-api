@@ -2,12 +2,19 @@ package api
 
 import (
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	"github.com/mksdziag/farmer-api/api/handlers"
 	"github.com/mksdziag/farmer-api/validator"
 )
 
 func StartServer() {
 	app := echo.New()
+
+	app.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"*"},
+		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
+	}))
+
 	app.Validator = validator.NewAppValidator()
 
 	apiGroup := app.Group("/api")

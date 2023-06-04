@@ -10,10 +10,10 @@ import (
 var DB *sqlx.DB
 
 func init() {
-	DB = createDatabaseConnection()
+	createDatabaseConnection()
 }
 
-func createDatabaseConnection() *sqlx.DB {
+func createDatabaseConnection() error {
 	db, err := sqlx.Connect("postgres", "user=postgres dbname=postgres password=postgres sslmode=disable host=api-db-1")
 
 	if err != nil {
@@ -29,5 +29,6 @@ func createDatabaseConnection() *sqlx.DB {
 	log.Println("** ✔ Connected to database **")
 	log.Println("*****************************")
 
-	return db
+	DB = db
+	return nil
 }

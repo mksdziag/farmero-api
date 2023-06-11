@@ -14,14 +14,16 @@ func init() {
 }
 
 func createDatabaseConnection() error {
-	db, err := sqlx.Connect("postgres", "user=postgres dbname=postgres password=postgres sslmode=disable host=api-db-1")
+	db, err := sqlx.Connect(
+		"postgres",
+		"user=postgres dbname=postgres password=postgres sslmode=disable host=api-db-1",
+	)
 
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	err = db.Ping()
-	if err != nil {
+	if err = db.Ping(); err != nil {
 		log.Fatal(err)
 	}
 
@@ -30,5 +32,5 @@ func createDatabaseConnection() error {
 	log.Println("*****************************")
 
 	DB = db
-	return nil
+	return err
 }

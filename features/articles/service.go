@@ -1,7 +1,6 @@
 package articles
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -110,9 +109,9 @@ func CreateArticle(article Article) (Article, error) {
 	defer tx.Rollback()
 
 	query := `INSERT INTO articles (id, title, description, content, cover) VALUES (:id, :title, :description, :content, :cover) RETURNING *`
-	rows, er := tx.NamedQuery(query, article)
+	rows, err := tx.NamedQuery(query, article)
 	if err != nil {
-		return Article{}, er
+		return Article{}, err
 	}
 
 	if err != nil {
@@ -148,21 +147,32 @@ func UpdateArticle(id string, article Article) (Article, error) {
 }
 
 func DeleteArticle(id string) error {
-	sqlStatement := `DELETE FROM articles WHERE id = $1`
-	res, err := db.DB.Exec(sqlStatement, id)
-
+	tx, err := db.DB.Beginx()
 	if err != nil {
 		return err
 	}
 
-	rowsAffected, err := res.RowsAffected()
+	defer tx.Rollback()
+
+	query := `DELETE from articles_categories WHERE article_id = $1;`
+	_, err = tx.Exec(query, id)
 	if err != nil {
 		return err
 	}
 
-	if rowsAffected == 0 {
-		return errors.New("no rows affected")
+	query = `DELETE from articles_tags WHERE article_id = $1;`
+	_, err = tx.Exec(query, id)
+	if err != nil {
+		return err
 	}
 
-	return nil
+	query = `DELETE from articles WHERE id = $1`
+	_, err = tx.Exec(query, id)
+	if err != nil {
+		return err
+	}
+
+	err = tx.Commit()
+
+	return err
 }
